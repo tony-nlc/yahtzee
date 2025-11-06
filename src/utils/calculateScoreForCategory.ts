@@ -1,63 +1,47 @@
-type Die = { value: number };
-
-const countDice = (dice: Die[]) => {
-  const counts: Record<number, number> = {};
-  for (const d of dice) {
-    counts[d.value] = (counts[d.value] || 0) + 1;
-  }
-  return counts;
-};
-
-const isStraight = (values: number[], length: number) => {
-  const uniqueSorted = Array.from(new Set(values)).sort((a, b) => a - b);
-  let longest = 1;
-  let current = 1;
-  for (let i = 1; i < uniqueSorted.length; i++) {
-    if (uniqueSorted[i] === uniqueSorted[i - 1] + 1) {
-      current++;
-      longest = Math.max(longest, current);
-    } else {
-      current = 1;
+export default function calculateScoreForCategory(category: string, dice: any[]) {
+  if (!dice || dice.length === 0) return 0;
+  
+  const values = dice.map(d => d.value).sort((a, b) => a - b);
+  const counts = values.reduce((acc, val) => {
+    acc[val] = (acc[val] || 0) + 1;
+    return acc;
+  }, {} as Record<number, number>);
+  
+  const sum = values.reduce((a, b) => a + b, 0);
+  
+  switch (category) {
+    case "Aces": return values.filter(v => v === 1).length * 1;
+    case "Twos": return values.filter(v => v === 2).length * 2;
+    case "Threes": return values.filter(v => v === 3).length * 3;
+    case "Fours": return values.filter(v => v === 4).length * 4;
+    case "Fives": return values.filter(v => v === 5).length * 5;
+    case "Sixes": return values.filter(v => v === 6).length * 6;
+    case "Three of a Kind": 
+      return Object.values(counts).some((c) => (c as number) >= 3) ? sum : 0;
+    case "Four of a Kind": 
+      return Object.values(counts).some((c) => (c as number) >= 4) ? sum : 0;
+    case "Full House": {
+      const hasTrio = Object.values(counts).includes(3);
+      const hasPair = Object.values(counts).includes(2);
+      return (hasTrio && hasPair) ? 25 : 0;
     }
-  }
-  return longest >= length;
-};
-
-export default function calculateScoreForCategory(label: string, rolledDice: Die[]) {
-  if (rolledDice.length === 0) return 0;
-
-  const counts = countDice(rolledDice);
-  const values = Object.keys(counts).map(Number);
-  const countArr = Object.values(counts);
-  const total = values.reduce((a, b) => a + b * counts[b], 0);
-
-  switch (label) {
-    // --- UPPER SECTION ---
-    case "Aces":   return (counts[1] || 0) * 1;
-    case "Twos":   return (counts[2] || 0) * 2;
-    case "Threes": return (counts[3] || 0) * 3;
-    case "Fours":  return (counts[4] || 0) * 4;
-    case "Fives":  return (counts[5] || 0) * 5;
-    case "Sixes":  return (counts[6] || 0) * 6;
-
-    // --- LOWER SECTION ---
-    case "Three of a Kind":
-      return countArr.includes(3) ? total : 0;
-    case "Four of a Kind":
-      return countArr.includes(4) ? total : 0;
-    case "Full House":
-      return countArr.includes(3) && countArr.includes(2) ? 25 : 0;
-    case "Small Straight":
-    case "Sm Straight":
-      return isStraight(values, 4) ? 30 : 0;
-    case "Large Straight":
-    case "Lg Straight":
-      return isStraight(values, 5) ? 40 : 0;
-    case "Yahtzee":
-      return countArr.includes(5) ? 50 : 0;
-    case "Chance":
-      return total;
-    default:
+    case "Sm Straight": {
+      const unique = [...new Set(values)].sort((a, b) => a - b);
+      const hasSmall = 
+        unique.join('').includes('1234') ||
+        unique.join('').includes('2345') ||
+        unique.join('').includes('3456');
+      return hasSmall ? 30 : 0;
+    }
+    case "Lg Straight": {
+      const unique = [...new Set(values)].sort((a, b) => a - b);
+      return (unique.join('') === '12345' || unique.join('') === '23456') ? 40 : 0;
+    }
+    case "Yahtzee": 
+      return Object.values(counts).includes(5) ? 50 : 0;
+    case "Chance": 
+      return sum;
+    default: 
       return 0;
   }
 }

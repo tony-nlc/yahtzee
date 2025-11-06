@@ -3,11 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://tony-nlc.github.io/yahtzee",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@3d-dice/dice-box": "^1.1.4",
@@ -16,6 +19,7 @@
     "@3d-dice/theme-smooth": "^0.2.1",
     "@3d-dice/theme-smooth-pip": "^0.2.1",
     "@tailwindcss/vite": "^4.1.16",
+    "gh-pages": "^6.3.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "tailwindcss": "^4.1.16",
